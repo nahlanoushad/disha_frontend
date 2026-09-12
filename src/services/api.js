@@ -59,6 +59,57 @@ export const api = {
       method: 'GET',
       token
     });
+  },
+
+  /**
+   * Get all categories with optional search, filtering, and pagination
+   */
+  async getCategories(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+    
+    const queryString = query.toString();
+    const endpoint = queryString ? `/categories?${queryString}` : '/categories';
+    return request(endpoint);
+  },
+
+  /**
+   * Get category by ID
+   */
+  async getCategoryById(id) {
+    return request(`/categories/${id}`);
+  },
+
+  /**
+   * Create category
+   */
+  async createCategory(data) {
+    return request('/categories', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Update category
+   */
+  async updateCategory(id, data) {
+    return request(`/categories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Delete category
+   */
+  async deleteCategory(id) {
+    return request(`/categories/${id}`, {
+      method: 'DELETE'
+    });
   }
 };
 
