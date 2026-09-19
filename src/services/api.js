@@ -110,6 +110,141 @@ export const api = {
     return request(`/categories/${id}`, {
       method: 'DELETE'
     });
+  },
+
+  /**
+   * Get all courses with optional search, filtering, and pagination
+   */
+  async getCourses(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
+    if (params.category && params.category !== 'all') query.append('category', params.category);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+    
+    const queryString = query.toString();
+    const endpoint = queryString ? `/courses?${queryString}` : '/courses';
+    return request(endpoint);
+  },
+
+  /**
+   * Get course by ID
+   */
+  async getCourseById(id) {
+    return request(`/courses/${id}`);
+  },
+
+  /**
+   * Create course
+   */
+  async createCourse(data) {
+    return request('/courses', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Update course
+   */
+  async updateCourse(id, data) {
+    return request(`/courses/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Delete course
+   */
+  async deleteCourse(id) {
+    return request(`/courses/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  /**
+   * Get all entrance exams with optional search, filtering, and pagination
+   */
+  async getEntranceExams(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+    
+    const queryString = query.toString();
+    const endpoint = queryString ? `/entrance-exams?${queryString}` : '/entrance-exams';
+    return request(endpoint);
+  },
+
+  /**
+   * Get entrance exam by ID
+   */
+  async getEntranceExamById(id) {
+    return request(`/entrance-exams/${id}`);
+  },
+
+  /**
+   * Create entrance exam
+   */
+  async createEntranceExam(data) {
+    return request('/entrance-exams', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Update entrance exam
+   */
+  async updateEntranceExam(id, data) {
+    return request(`/entrance-exams/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Delete entrance exam
+   */
+  async deleteEntranceExam(id) {
+    return request(`/entrance-exams/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  /**
+   * Get all students with optional search, filtering, and pagination
+   */
+  async getStudents(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status && params.status !== 'all') query.append('status', params.status);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+    
+    const queryString = query.toString();
+    const endpoint = queryString ? `/admin/students?${queryString}` : '/admin/students';
+    return request(endpoint);
+  },
+
+  /**
+   * Get student by ID
+   */
+  async getStudentById(id) {
+    return request(`/admin/students/${id}`);
+  },
+
+  /**
+   * Update student status
+   */
+  async updateStudentStatus(id, status) {
+    return request(`/admin/students/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
   }
 };
 

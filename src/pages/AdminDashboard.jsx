@@ -24,6 +24,9 @@ import {
   Key
 } from 'lucide-react';
 import CategoriesTab from '../components/CategoriesTab.jsx';
+import CoursesTab from '../components/CoursesTab.jsx';
+import EntranceExamsTab from '../components/EntranceExamsTab.jsx';
+import StudentsTab from '../components/StudentsTab.jsx';
 
 const AdminDashboard = ({ onNavigateToPublic }) => {
   const { admin, logout, refreshProfile, token } = useAuth();
@@ -207,7 +210,7 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
               }}
             >
               <Building2 size={19} color={activeTab === 'colleges' ? '#7c3aed' : '#7c6f93'} />
-              Colleges Directory
+              College
             </button>
 
             <button
@@ -231,7 +234,79 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
               }}
             >
               <Layers size={19} color={activeTab === 'categories' ? '#7c3aed' : '#7c6f93'} />
-              Categories Directory
+              Category
+            </button>
+
+            <button
+              onClick={() => setActiveTab('courses')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'courses' ? 600 : 500,
+                color: activeTab === 'courses' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'courses' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'courses' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <BookOpen size={19} color={activeTab === 'courses' ? '#7c3aed' : '#7c6f93'} />
+              Course
+            </button>
+
+            <button
+              onClick={() => setActiveTab('entranceExams')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'entranceExams' ? 600 : 500,
+                color: activeTab === 'entranceExams' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'entranceExams' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'entranceExams' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <FileText size={19} color={activeTab === 'entranceExams' ? '#7c3aed' : '#7c6f93'} />
+              Entrance Exams
+            </button>
+
+            <button
+              onClick={() => setActiveTab('students')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'students' ? 600 : 500,
+                color: activeTab === 'students' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'students' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'students' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <Users size={19} color={activeTab === 'students' ? '#7c3aed' : '#7c6f93'} />
+              Students
             </button>
 
             <button
@@ -686,6 +761,21 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
           {/* TAB 3: CATEGORIES */}
           {activeTab === 'categories' && (
             <CategoriesTab />
+          )}
+
+          {/* TAB: COURSES */}
+          {activeTab === 'courses' && (
+            <CoursesTab />
+          )}
+
+          {/* TAB: ENTRANCE EXAMS */}
+          {activeTab === 'entranceExams' && (
+            <EntranceExamsTab />
+          )}
+
+          {/* TAB: STUDENTS */}
+          {activeTab === 'students' && (
+            <StudentsTab />
           )}
 
           {/* TAB 4: INQUIRIES */}

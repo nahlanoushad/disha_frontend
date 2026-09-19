@@ -154,7 +154,7 @@ const CategoriesTab = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1035' }}>Category Directory</h2>
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1035' }}>Category</h2>
           <p style={{ fontSize: '0.82rem', color: '#7c6f93' }}>Manage core academic categories linked to courses and institutions</p>
         </div>
         <button 
