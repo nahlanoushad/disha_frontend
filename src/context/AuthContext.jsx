@@ -9,6 +9,13 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
 
+  const logout = () => {
+    localStorage.removeItem('disha_admin_token');
+    setToken(null);
+    setAdmin(null);
+    setAuthError(null);
+  };
+
   // Initialize and verify token on app startup
   useEffect(() => {
     const verifyExistingSession = async () => {
@@ -52,13 +59,6 @@ export const AuthProvider = ({ children }) => {
       setAuthError(err.message);
       throw err;
     }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('disha_admin_token');
-    setToken(null);
-    setAdmin(null);
-    setAuthError(null);
   };
 
   const refreshProfile = async () => {

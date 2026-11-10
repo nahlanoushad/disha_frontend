@@ -10,7 +10,7 @@ async function request(endpoint, options = {}) {
     ...(options.headers || {})
   };
 
-  const token = options.token || localStorage.getItem('disha_admin_token');
+  const token = options.token || (options.userType === 'student' ? localStorage.getItem('disha_student_token') : localStorage.getItem('disha_admin_token'));
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -58,6 +58,50 @@ export const api = {
     return request('/auth/me', {
       method: 'GET',
       token
+    });
+  },
+
+  /**
+   * Student Registration
+   */
+  async studentRegister(name, email, password) {
+    return request('/auth/user/register', {
+      method: 'POST',
+      body: JSON.stringify({ name, email, password })
+    });
+  },
+
+  /**
+   * Student OTP Verification
+   */
+  async studentVerifyOtp(email, otp, fcmToken = null) {
+    const payload = { email, otp };
+    if (fcmToken) {
+      payload.fcmToken = fcmToken;
+    }
+    return request('/auth/user/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  /**
+   * Student Resend OTP
+   */
+  async studentResendOtp(email) {
+    return request('/auth/user/resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+  },
+
+  /**
+   * Student Login
+   */
+  async studentLogin(email, password) {
+    return request('/auth/user/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
     });
   }
 };

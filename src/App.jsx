@@ -1,10 +1,25 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { StudentAuthProvider, useStudentAuth } from './context/StudentAuthContext.jsx';
 import AdminLogin from './pages/AdminLogin.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
-import { GraduationCap, ShieldCheck, ArrowRight, Sparkles, BookOpen, Compass, Award } from 'lucide-react';
+import StudentRegister from './pages/StudentRegister.jsx';
+import StudentVerifyOtp from './pages/StudentVerifyOtp.jsx';
+import StudentLogin from './pages/StudentLogin.jsx';
+import StudentDashboard from './pages/StudentDashboard.jsx';
+import {
+  GraduationCap,
+  ShieldCheck,
+  ArrowRight,
+  Sparkles,
+  BookOpen,
+  Compass,
+  Award,
+  UserPlus,
+  LogIn
+} from 'lucide-react';
 
-const PublicLanding = ({ onGoToAdmin }) => {
+const PublicLanding = ({ onGoToAdmin, onGoToStudentRegister, onGoToStudentLogin }) => {
   return (
     <div style={{
       minHeight: '100vh',
@@ -60,13 +75,35 @@ const PublicLanding = ({ onGoToAdmin }) => {
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+          {onGoToStudentLogin && (
+            <button
+              onClick={onGoToStudentLogin}
+              className="btn-secondary"
+              style={{ padding: '0.6rem 1.15rem', fontSize: '0.85rem' }}
+            >
+              <LogIn size={15} />
+              Student Login
+            </button>
+          )}
+
+          {onGoToStudentRegister && (
+            <button
+              onClick={onGoToStudentRegister}
+              className="btn-primary"
+              style={{ padding: '0.6rem 1.15rem', fontSize: '0.85rem' }}
+            >
+              <UserPlus size={15} />
+              Student Register
+            </button>
+          )}
+
           <button
             onClick={onGoToAdmin}
-            className="btn-primary"
+            className="btn-secondary"
             style={{ padding: '0.6rem 1.15rem', fontSize: '0.85rem' }}
           >
-            <ShieldCheck size={16} />
+            <ShieldCheck size={15} />
             Admin Portal
           </button>
         </div>
@@ -111,13 +148,36 @@ const PublicLanding = ({ onGoToAdmin }) => {
         </p>
 
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {onGoToStudentRegister && (
+            <button
+              onClick={onGoToStudentRegister}
+              className="btn-primary"
+              style={{ padding: '0.85rem 1.75rem', fontSize: '1rem' }}
+            >
+              <UserPlus size={18} />
+              Get Started as Student
+              <ArrowRight size={18} />
+            </button>
+          )}
+
+          {onGoToStudentLogin && (
+            <button
+              onClick={onGoToStudentLogin}
+              className="btn-secondary"
+              style={{ padding: '0.85rem 1.75rem', fontSize: '1rem' }}
+            >
+              <LogIn size={18} />
+              Student Login
+            </button>
+          )}
+
           <button
             onClick={onGoToAdmin}
-            className="btn-primary"
+            className="btn-secondary"
             style={{ padding: '0.85rem 1.75rem', fontSize: '1rem' }}
           >
+            <ShieldCheck size={18} />
             Enter Admin Portal
-            <ArrowRight size={18} />
           </button>
         </div>
 
@@ -161,9 +221,12 @@ const PublicLanding = ({ onGoToAdmin }) => {
 
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
-  const [currentView, setCurrentView] = useState('login'); // 'login' | 'public'
+  const { isStudentAuthenticated, isStudentLoading } = useStudentAuth();
+  const [currentView, setCurrentView] = useState('public'); // 'public' | 'login' | 'admin-login' | 'student-register' | 'student-verify-otp' | 'student-login' | 'student-dashboard'
+  const [registeredEmail, setRegisteredEmail] = useState('');
 
-  if (isLoading) {
+  // Wait for both admin AND student session checks to complete
+  if (isLoading || isStudentLoading) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -200,25 +263,84 @@ const AppContent = () => {
     );
   }
 
-  // If user is authenticated, render the full Admin Dashboard
+  // If user is authenticated as Admin, render the full Admin Dashboard
   if (isAuthenticated) {
     return <AdminDashboard onNavigateToPublic={() => setCurrentView('public')} />;
   }
 
-  // If viewing public landing page
-  if (currentView === 'public') {
-    return <PublicLanding onGoToAdmin={() => setCurrentView('login')} />;
+  // If student is authenticated (from localStorage session restore OR after login), show dashboard
+  if (isStudentAuthenticated || currentView === 'student-dashboard') {
+    return <StudentDashboard onNavigateToPublic={() => setCurrentView('public')} />;
   }
 
-  // Default: Admin Login screen
-  return <AdminLogin onNavigateToPublic={() => setCurrentView('public')} />;
+  // Student Registration view
+  if (currentView === 'student-register') {
+    return (
+      <StudentRegister
+        onRegistrationSuccess={(email) => {
+          setRegisteredEmail(email);
+          setCurrentView('student-verify-otp');
+        }}
+        onNavigateToLogin={() => setCurrentView('student-login')}
+        onNavigateToPublic={() => setCurrentView('public')}
+      />
+    );
+  }
+
+  // Student OTP Verification view
+  if (currentView === 'student-verify-otp') {
+    return (
+      <StudentVerifyOtp
+        email={registeredEmail}
+        onVerificationSuccess={(_response) => {
+          setCurrentView('student-login');
+        }}
+        onNavigateToLogin={() => setCurrentView('student-login')}
+        onNavigateToRegister={() => setCurrentView('student-register')}
+      />
+    );
+  }
+
+  // Student Login view
+  if (currentView === 'student-login') {
+    return (
+      <StudentLogin
+        initialEmail={registeredEmail}
+        onLoginSuccess={(_response) => {
+          setCurrentView('student-dashboard');
+        }}
+        onNavigateToRegister={() => setCurrentView('student-register')}
+        onNavigateToVerify={(emailToVerify) => {
+          setRegisteredEmail(emailToVerify);
+          setCurrentView('student-verify-otp');
+        }}
+        onNavigateToPublic={() => setCurrentView('public')}
+      />
+    );
+  }
+
+  // Admin Login view
+  if (currentView === 'login' || currentView === 'admin-login') {
+    return <AdminLogin onNavigateToPublic={() => setCurrentView('public')} />;
+  }
+
+  // Default: Public landing page
+  return (
+    <PublicLanding
+      onGoToAdmin={() => setCurrentView('login')}
+      onGoToStudentRegister={() => setCurrentView('student-register')}
+      onGoToStudentLogin={() => setCurrentView('student-login')}
+    />
+  );
 };
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <StudentAuthProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </StudentAuthProvider>
   );
 }
 
