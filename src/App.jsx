@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import StudentLogin from './pages/student/StudentLogin.jsx';
 import StudentRegister from './pages/student/StudentRegister.jsx';
 import StudentDashboard from './pages/student/StudentDashboard.jsx';
+import PublicHomePage from './pages/PublicHomePage.jsx';
 import {
   GraduationCap,
   ShieldCheck,
@@ -485,9 +486,10 @@ const AppContent = () => {
 
   if (currentView === 'public') {
     return (
-      <PublicLanding
+      <PublicHomePage
         onGoToAdmin={() => setCurrentView('adminLogin')}
-        onGoToStudent={() => setCurrentView('studentLogin')}
+        onGoToStudentLogin={() => setCurrentView('studentLogin')}
+        onGoToStudentRegister={() => setCurrentView('studentRegister')}
       />
     );
   }

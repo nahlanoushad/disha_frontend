@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GraduationCap, ArrowRight, Mail, Lock } from 'lucide-react';
+import { GraduationCap, ArrowRight, Mail, Lock, ShieldCheck, ArrowLeft } from 'lucide-react';
 import { useStudentAuth } from '../../context/StudentAuthContext.jsx';
 
 const StudentLogin = ({ onNavigateToRegister, onNavigateToPublic }) => {
@@ -19,7 +19,6 @@ const StudentLogin = ({ onNavigateToRegister, onNavigateToPublic }) => {
 
     try {
       await login(formData.email, formData.password);
-      // Navigation is automatically handled by the App component once isAuthenticated is true
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {
@@ -28,183 +27,215 @@ const StudentLogin = ({ onNavigateToRegister, onNavigateToPublic }) => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#fbfaff',
-      color: '#1e1035',
-      padding: '2rem 1rem',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Background elements */}
-      <div style={{
-        position: 'absolute',
-        bottom: '-10%',
-        left: '-5%',
-        width: '500px',
-        height: '500px',
-        background: 'radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0) 70%)',
-        filter: 'blur(60px)',
-        pointerEvents: 'none'
-      }} />
-
-      <div style={{
-        width: '100%',
-        maxWidth: '400px',
-        position: 'relative',
-        zIndex: 1
-      }}>
-        {/* Logo Header */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
-            background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
-            display: 'flex',
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f8fafc',
+        color: '#0f172a',
+        padding: '2rem 1rem',
+        position: 'relative'
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '420px',
+          position: 'relative',
+          zIndex: 1
+        }}
+      >
+        {/* Back to Home button */}
+        <button
+          onClick={onNavigateToPublic}
+          style={{
+            background: 'none',
+            border: 'none',
+            display: 'inline-flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
-            marginBottom: '1rem'
-          }}>
-            <GraduationCap size={26} color="#ffffff" />
-          </div>
-          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e1035', marginBottom: '0.25rem' }}>
-            Student Portal
-          </h2>
-          <p style={{ color: '#5b5273', fontSize: '0.95rem' }}>
-            Sign in to your DISHA account
-          </p>
-        </div>
+            gap: '0.4rem',
+            color: '#64748b',
+            fontSize: '0.88rem',
+            fontWeight: 600,
+            cursor: 'pointer',
+            marginBottom: '1.5rem',
+            padding: 0
+          }}
+          onMouseOver={(e) => (e.target.style.color = '#1d4ed8')}
+          onMouseOut={(e) => (e.target.style.color = '#64748b')}
+        >
+          <ArrowLeft size={16} /> Back to DISHA Home
+        </button>
 
         {/* Card */}
-        <div className="glass-panel" style={{ padding: '2.5rem' }}>
-          {error && (
-            <div style={{
-              padding: '0.85rem 1rem',
-              backgroundColor: '#fef2f2',
-              color: '#b91c1c',
-              borderRadius: '8px',
-              fontSize: '0.85rem',
-              marginBottom: '1.5rem',
-              border: '1px solid #fee2e2',
+        <div
+          className="disha-card"
+          style={{
+            padding: '2.5rem 2rem',
+            boxShadow: '0 4px 20px rgba(15, 23, 42, 0.08)'
+          }}
+        >
+          {/* Logo Header */}
+          <div
+            style={{
               display: 'flex',
-              alignItems: 'flex-start',
-              gap: '0.5rem'
-            }}>
-              <span>{error}</span>
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginBottom: '2rem'
+            }}
+          >
+            <div
+              style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '12px',
+                backgroundColor: '#1d4ed8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(29, 78, 216, 0.25)',
+                marginBottom: '1rem',
+                color: '#ffffff'
+              }}
+            >
+              <GraduationCap size={28} />
+            </div>
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.25rem', letterSpacing: '-0.02em' }}>
+              Student Sign In
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', textAlign: 'center' }}>
+              Access your personalized higher education guidance hub
+            </p>
+          </div>
+
+          {error && (
+            <div
+              style={{
+                backgroundColor: '#fff1f2',
+                border: '1px solid #fecdd3',
+                color: '#be123c',
+                padding: '0.8rem 1rem',
+                borderRadius: '8px',
+                fontSize: '0.88rem',
+                marginBottom: '1.5rem'
+              }}
+            >
+              {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e1035' }}>Email Address</label>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                Email Address
+              </label>
               <div style={{ position: 'relative' }}>
-                <Mail size={18} color="#9ca3af" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                <Mail
+                  size={18}
+                  color="#94a3b8"
+                  style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
+                />
                 <input
                   type="email"
                   name="email"
+                  required
+                  placeholder="student@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="name@example.com"
                   className="form-input"
                   style={{ paddingLeft: '2.75rem' }}
-                  required
                 />
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#1e1035' }}>Password</label>
-              </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#334155', marginBottom: '0.4rem' }}>
+                Password
+              </label>
               <div style={{ position: 'relative' }}>
-                <Lock size={18} color="#9ca3af" style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }} />
+                <Lock
+                  size={18}
+                  color="#94a3b8"
+                  style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)' }}
+                />
                 <input
                   type="password"
                   name="password"
+                  required
+                  placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
                   className="form-input"
                   style={{ paddingLeft: '2.75rem' }}
-                  required
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              className="btn-primary"
               disabled={isLoading}
+              className="btn-primary"
               style={{
                 width: '100%',
                 padding: '0.85rem',
-                fontSize: '0.95rem',
                 marginTop: '0.5rem',
-                justifyContent: 'center'
+                fontSize: '0.95rem'
               }}
             >
               {isLoading ? (
-                <div className="spinner" style={{ width: '20px', height: '20px', borderWidth: '2px' }} />
+                <>
+                  <div
+                    className="spinner"
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      border: '2px solid rgba(255, 255, 255, 0.4)',
+                      borderTopColor: '#ffffff',
+                      borderRadius: '50%'
+                    }}
+                  />
+                  <span>Signing In...</span>
+                </>
               ) : (
                 <>
-                  Sign In
+                  <span>Sign In to Student Portal</span>
                   <ArrowRight size={18} />
                 </>
               )}
             </button>
           </form>
 
-          <div style={{ marginTop: '2rem', textAlign: 'center', fontSize: '0.85rem', color: '#5b5273' }}>
-            <p>
-              Don't have an account?{' '}
-              <button
-                onClick={onNavigateToRegister}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#7c3aed',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  padding: 0
-                }}
-              >
-                Create one now
-              </button>
-            </p>
-          </div>
-        </div>
-
-        {/* Back to Home */}
-        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
-          <button
-            onClick={onNavigateToPublic}
+          {/* Footer inside card */}
+          <div
             style={{
-              background: 'none',
-              border: 'none',
-              color: '#7c6f93',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-              transition: 'color 0.2s'
+              marginTop: '2rem',
+              paddingTop: '1.25rem',
+              borderTop: '1px solid #e2e8f0',
+              textAlign: 'center'
             }}
-            onMouseOver={(e) => e.target.style.color = '#1e1035'}
-            onMouseOut={(e) => e.target.style.color = '#7c6f93'}
           >
-            ← Back to Public Website
-          </button>
+            <p style={{ fontSize: '0.88rem', color: '#64748b', marginBottom: '0.5rem' }}>
+              Don't have a student account yet?
+            </p>
+            <button
+              onClick={onNavigateToRegister}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: '#1d4ed8',
+                fontWeight: 700,
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                padding: 0
+              }}
+              onMouseOver={(e) => (e.target.style.textDecoration = 'underline')}
+              onMouseOut={(e) => (e.target.style.textDecoration = 'none')}
+            >
+              Create Free Student Account &rarr;
+            </button>
+          </div>
         </div>
       </div>
     </div>

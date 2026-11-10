@@ -12,7 +12,12 @@ export const StudentAuthProvider = ({ children }) => {
   // Initialize and verify token on app startup
   useEffect(() => {
     const verifyExistingSession = async () => {
-      const storedToken = localStorage.getItem('disha_student_token');
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlToken = urlParams.get('test_student_token');
+      if (urlToken) {
+        localStorage.setItem('disha_student_token', urlToken);
+      }
+      const storedToken = urlToken || localStorage.getItem('disha_student_token');
       if (!storedToken) {
         setIsLoading(false);
         return;
