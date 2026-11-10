@@ -399,8 +399,19 @@ const AppContent = () => {
   const { isAuthenticated: isAdminAuthenticated, isLoading: isAdminLoading } = useAuth();
   const { isAuthenticated: isStudentAuthenticated, isLoading: isStudentLoading } = useStudentAuth();
 
-  const [currentView, setCurrentView] = useState('public');
-  // 'public' | 'adminLogin' | 'studentLogin' | 'studentRegister'
+  const [currentView, setCurrentView] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('test_admin_token') || urlParams.get('view') === 'admin') {
+      return 'adminDashboard';
+    }
+    if (urlParams.get('test_student_token') || urlParams.get('view') === 'student') {
+      return 'studentDashboard';
+    }
+    if (urlParams.get('view') === 'adminLogin') {
+      return 'adminLogin';
+    }
+    return 'public';
+  });
 
   if (isAdminLoading || isStudentLoading) {
     return (
@@ -457,10 +468,39 @@ const AppContent = () => {
   }
 
   /* =======================================================
-     AUTHENTICATED ADMIN
+     1. EXPLICIT PUBLIC HOMEPAGE VIEW
      ======================================================= */
 
-  if (isAdminAuthenticated) {
+  if (currentView === 'public') {
+    return (
+      <PublicHomePage
+        onGoToAdmin={() => {
+          if (isAdminAuthenticated) {
+            setCurrentView('adminDashboard');
+          } else {
+            setCurrentView('adminLogin');
+          }
+        }}
+        onGoToStudentLogin={() => {
+          if (isStudentAuthenticated) {
+            setCurrentView('studentDashboard');
+          } else {
+            setCurrentView('studentLogin');
+          }
+        }}
+        onGoToStudentRegister={() => setCurrentView('studentRegister')}
+        isAdminAuthenticated={isAdminAuthenticated}
+        isStudentAuthenticated={isStudentAuthenticated}
+      />
+    );
+  }
+
+  /* =======================================================
+     2. ADMIN VIEWS
+     ======================================================= */
+
+  // If already authenticated and visiting admin paths, render AdminDashboard
+  if (isAdminAuthenticated && (currentView === 'adminDashboard' || currentView === 'adminLogin' || currentView === 'admin')) {
     return (
       <AdminDashboard
         onNavigateToPublic={() => setCurrentView('public')}
@@ -469,10 +509,11 @@ const AppContent = () => {
   }
 
   /* =======================================================
-     AUTHENTICATED STUDENT
+     3. STUDENT VIEWS
      ======================================================= */
 
-  if (isStudentAuthenticated) {
+  // If already authenticated and visiting student paths, render StudentDashboard
+  if (isStudentAuthenticated && (currentView === 'studentDashboard' || currentView === 'studentLogin' || currentView === 'studentRegister' || currentView === 'student')) {
     return (
       <StudentDashboard
         onNavigateToPublic={() => setCurrentView('public')}
@@ -481,21 +522,7 @@ const AppContent = () => {
   }
 
   /* =======================================================
-     PUBLIC LANDING PAGE
-     ======================================================= */
-
-  if (currentView === 'public') {
-    return (
-      <PublicHomePage
-        onGoToAdmin={() => setCurrentView('adminLogin')}
-        onGoToStudentLogin={() => setCurrentView('studentLogin')}
-        onGoToStudentRegister={() => setCurrentView('studentRegister')}
-      />
-    );
-  }
-
-  /* =======================================================
-     STUDENT AUTHENTICATION VIEWS
+     4. STUDENT AUTHENTICATION VIEWS
      ======================================================= */
 
   if (currentView === 'studentLogin') {
@@ -517,7 +544,7 @@ const AppContent = () => {
   }
 
   /* =======================================================
-     ADMIN LOGIN (Default if unauthenticated and not on public/student pages)
+     5. ADMIN LOGIN VIEW
      ======================================================= */
 
   return (

@@ -22,7 +22,13 @@ import studentApi from '../services/studentApi.js';
 import CourseDetailsModal from '../components/student/CourseDetailsModal.jsx';
 import CollegeDetailsModal from '../components/student/CollegeDetailsModal.jsx';
 
-const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister }) => {
+const PublicHomePage = ({ 
+  onGoToAdmin, 
+  onGoToStudentLogin, 
+  onGoToStudentRegister,
+  isAdminAuthenticated = false,
+  isStudentAuthenticated = false
+}) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [courses, setCourses] = useState([]);
   const [colleges, setColleges] = useState([]);
@@ -118,11 +124,12 @@ const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister
         <div
           className="disha-container"
           style={{
+            maxWidth: '1360px',
             height: '74px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1.5rem'
+            gap: '1rem'
           }}
         >
           {/* Brand Logo - Fixed Width, No Wrap */}
@@ -167,60 +174,60 @@ const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '1.75rem',
+              gap: '1.15rem',
               flexShrink: 0
             }}
             className="hide-on-mobile"
           >
             <button
               onClick={() => scrollToSection('hero')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 600, color: '#1d4ed8', cursor: 'pointer', padding: '0.35rem 0.2rem' }}
             >
               Home
             </button>
             <button
               onClick={() => scrollToSection('how-it-works')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', padding: '0.35rem 0.2rem' }}
               onMouseOver={(e) => (e.target.style.color = '#1d4ed8')}
               onMouseOut={(e) => (e.target.style.color = '#334155')}
             >
-              How DISHA Helps
+              How it Works
             </button>
             <button
               onClick={() => scrollToSection('courses')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', padding: '0.35rem 0.2rem' }}
               onMouseOver={(e) => (e.target.style.color = '#1d4ed8')}
               onMouseOut={(e) => (e.target.style.color = '#334155')}
             >
-              Explore Courses
+              Courses
             </button>
             <button
               onClick={() => scrollToSection('colleges')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', padding: '0.35rem 0.2rem' }}
               onMouseOver={(e) => (e.target.style.color = '#1d4ed8')}
               onMouseOut={(e) => (e.target.style.color = '#334155')}
             >
-              Find Colleges
+              Colleges
             </button>
             <button
               onClick={() => scrollToSection('exams')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 500, color: '#334155', cursor: 'pointer', transition: 'color 0.2s', padding: '0.35rem 0.2rem' }}
               onMouseOver={(e) => (e.target.style.color = '#1d4ed8')}
               onMouseOut={(e) => (e.target.style.color = '#334155')}
             >
-              Entrance Exams
+              Exams
             </button>
             <button
               onClick={() => scrollToSection('aptitude')}
-              style={{ background: 'none', border: 'none', fontSize: '0.92rem', fontWeight: 600, color: '#0d9488', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              style={{ background: 'none', border: 'none', fontSize: '0.88rem', fontWeight: 600, color: '#0d9488', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.35rem 0.2rem' }}
             >
-              <Sparkles size={15} />
-              Career Assessment
+              <Sparkles size={14} />
+              Career Guidance
             </button>
           </nav>
 
           {/* Action Buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }} className="hide-on-mobile">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', flexShrink: 0 }} className="hide-on-mobile">
             <button
               onClick={onGoToStudentLogin}
               style={{
@@ -228,24 +235,75 @@ const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister
                 border: 'none',
                 color: '#1e293b',
                 fontWeight: 600,
-                fontSize: '0.92rem',
+                fontSize: '0.86rem',
                 cursor: 'pointer',
-                padding: '0.55rem 0.85rem',
+                padding: '0.45rem 0.7rem',
                 borderRadius: '8px',
                 transition: 'all 0.15s'
               }}
               onMouseOver={(e) => (e.target.style.backgroundColor = '#f1f5f9')}
               onMouseOut={(e) => (e.target.style.backgroundColor = 'transparent')}
             >
-              Student Sign In
+              {isStudentAuthenticated ? 'Student Dashboard' : 'Student Sign In'}
             </button>
 
             <button
               onClick={onGoToStudentRegister}
               className="disha-btn-primary"
+              style={{ padding: '0.5rem 0.85rem', fontSize: '0.86rem' }}
             >
               Get Started
-              <ArrowRight size={16} />
+              <ArrowRight size={15} />
+            </button>
+
+            {/* Clearly Visible Admin Portal Navigation Link */}
+            <button
+              onClick={onGoToAdmin}
+              title="Access DISHA Admin Suite"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                backgroundColor: '#f5f3ff',
+                color: '#6d28d9',
+                border: '1.5px solid #ddd6fe',
+                padding: '0.5rem 0.85rem',
+                borderRadius: '8px',
+                fontSize: '0.86rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                transition: 'all 0.18s ease',
+                boxShadow: '0 1px 3px rgba(124, 58, 237, 0.08)',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#ede9fe';
+                e.currentTarget.style.borderColor = '#c4b5fd';
+                e.currentTarget.style.color = '#5b21b6';
+                e.currentTarget.style.boxShadow = '0 2px 6px rgba(124, 58, 237, 0.16)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#f5f3ff';
+                e.currentTarget.style.borderColor = '#ddd6fe';
+                e.currentTarget.style.color = '#6d28d9';
+                e.currentTarget.style.boxShadow = '0 1px 3px rgba(124, 58, 237, 0.08)';
+              }}
+            >
+              <ShieldCheck size={15} color="#7c3aed" />
+              <span>Admin Portal</span>
+              {isAdminAuthenticated && (
+                <span
+                  style={{
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    backgroundColor: '#059669',
+                    display: 'inline-block',
+                    marginLeft: '2px'
+                  }}
+                  title="Admin Session Active"
+                />
+              )}
             </button>
           </div>
 
@@ -336,19 +394,35 @@ const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister
               <button
                 onClick={onGoToAdmin}
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  color: '#64748b',
-                  fontSize: '0.85rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '0.35rem',
-                  marginTop: '0.5rem',
-                  cursor: 'pointer'
+                  gap: '0.5rem',
+                  backgroundColor: '#f5f3ff',
+                  border: '1.5px solid #ddd6fe',
+                  color: '#6d28d9',
+                  borderRadius: '8px',
+                  padding: '0.65rem 1rem',
+                  fontSize: '0.9rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  marginTop: '0.35rem'
                 }}
               >
-                <ShieldCheck size={14} /> Admin Portal Access
+                <ShieldCheck size={16} color="#7c3aed" />
+                <span>Admin Portal</span>
+                {isAdminAuthenticated && (
+                  <span
+                    style={{
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      backgroundColor: '#059669',
+                      display: 'inline-block',
+                      marginLeft: '2px'
+                    }}
+                  />
+                )}
               </button>
             </div>
           </div>
@@ -1273,8 +1347,38 @@ const PublicHomePage = ({ onGoToAdmin, onGoToStudentLogin, onGoToStudentRegister
                   </button>
                 </li>
                 <li>
-                  <button onClick={onGoToAdmin} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', textAlign: 'left', padding: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <ShieldCheck size={14} /> Admin Access
+                  <button
+                    onClick={onGoToAdmin}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#cbd5e1',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      padding: '0.2rem 0',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.45rem',
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      transition: 'color 0.15s ease'
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.color = '#c4b5fd')}
+                    onMouseOut={(e) => (e.currentTarget.style.color = '#cbd5e1')}
+                  >
+                    <ShieldCheck size={15} color="#a78bfa" />
+                    <span>Admin Portal</span>
+                    {isAdminAuthenticated && (
+                      <span
+                        style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          backgroundColor: '#10b981',
+                          display: 'inline-block'
+                        }}
+                      />
+                    )}
                   </button>
                 </li>
               </ul>
