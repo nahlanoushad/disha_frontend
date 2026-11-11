@@ -23,6 +23,10 @@ import {
   UserCheck,
   Key
 } from 'lucide-react';
+import CategoriesTab from '../components/CategoriesTab.jsx';
+import CoursesTab from '../components/CoursesTab.jsx';
+import EntranceExamsTab from '../components/EntranceExamsTab.jsx';
+import StudentsTab from '../components/StudentsTab.jsx';
 
 const AdminDashboard = ({ onNavigateToPublic }) => {
   const { admin, logout, refreshProfile, token } = useAuth();
@@ -206,7 +210,31 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
               }}
             >
               <Building2 size={19} color={activeTab === 'colleges' ? '#7c3aed' : '#7c6f93'} />
-              Colleges Directory
+              College
+            </button>
+
+            <button
+              onClick={() => setActiveTab('categories')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'categories' ? 600 : 500,
+                color: activeTab === 'categories' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'categories' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'categories' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <Layers size={19} color={activeTab === 'categories' ? '#7c3aed' : '#7c6f93'} />
+              Category
             </button>
 
             <button
@@ -230,7 +258,55 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
               }}
             >
               <BookOpen size={19} color={activeTab === 'courses' ? '#7c3aed' : '#7c6f93'} />
-              Courses & Streams
+              Course
+            </button>
+
+            <button
+              onClick={() => setActiveTab('entranceExams')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'entranceExams' ? 600 : 500,
+                color: activeTab === 'entranceExams' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'entranceExams' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'entranceExams' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <FileText size={19} color={activeTab === 'entranceExams' ? '#7c3aed' : '#7c6f93'} />
+              Entrance Exams
+            </button>
+
+            <button
+              onClick={() => setActiveTab('students')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'students' ? 600 : 500,
+                color: activeTab === 'students' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'students' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'students' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <Users size={19} color={activeTab === 'students' ? '#7c3aed' : '#7c6f93'} />
+              Students
             </button>
 
             <button
@@ -682,45 +758,24 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
             </div>
           )}
 
-          {/* TAB 3: COURSES */}
-          {activeTab === 'courses' && (
-            <div>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#1e1035' }}>Academic Streams & Courses</h2>
-                <p style={{ fontSize: '0.82rem', color: '#7c6f93' }}>Curated undergraduate degree pathways mapped for students</p>
-              </div>
+          {/* TAB 3: CATEGORIES */}
+          {activeTab === 'categories' && (
+            <CategoriesTab />
+          )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
-                {[
-                  { title: 'Engineering & Technology (B.Tech)', count: '48 Specializations', tag: 'High Demand', color: '#7c3aed' },
-                  { title: 'Medicine & Healthcare (MBBS/BDS)', count: '24 Programs', tag: 'Competitive', color: '#059669' },
-                  { title: 'Arts, Design & Humanities', count: '64 Disciplines', tag: 'Emerging', color: '#c026d3' },
-                  { title: 'Pure & Applied Sciences (B.Sc)', count: '52 Specializations', tag: 'Research', color: '#0284c7' },
-                  { title: 'Commerce, CA & Business (B.Com/BBA)', count: '38 Programs', tag: 'Industry', color: '#d97706' }
-                ].map((stream, idx) => (
-                  <div key={idx} className="glass-panel glass-panel-hover" style={{ padding: '1.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                      <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '10px',
-                        backgroundColor: '#f5f3ff',
-                        border: `1px solid #ddd6fe`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: stream.color
-                      }}>
-                        <Layers size={20} />
-                      </div>
-                      <span className="badge badge-violet">{stream.tag}</span>
-                    </div>
-                    <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#1e1035', marginBottom: '0.35rem' }}>{stream.title}</h3>
-                    <p style={{ fontSize: '0.8rem', color: '#5b5273' }}>{stream.count}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          {/* TAB: COURSES */}
+          {activeTab === 'courses' && (
+            <CoursesTab />
+          )}
+
+          {/* TAB: ENTRANCE EXAMS */}
+          {activeTab === 'entranceExams' && (
+            <EntranceExamsTab />
+          )}
+
+          {/* TAB: STUDENTS */}
+          {activeTab === 'students' && (
+            <StudentsTab />
           )}
 
           {/* TAB 4: INQUIRIES */}
