@@ -375,11 +375,49 @@ const PublicLanding = ({ onGoToAdmin, onGoToStudentRegister, onGoToStudentLogin 
   );
 };
 
+const getInitialView = () => {
+  const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+  if (path === '/admin/login' || path === '/admin') {
+    return 'admin-login';
+  }
+  return 'public';
+};
+
 const AppContent = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const { isStudentAuthenticated, isStudentLoading } = useStudentAuth();
-  const [currentView, setCurrentView] = useState('public'); // 'public' | 'login' | 'admin-login' | 'student-register' | 'student-verify-otp' | 'student-login' | 'student-dashboard'
+  const [currentView, setCurrentView] = useState(getInitialView); // 'public' | 'login' | 'admin-login' | 'student-register' | 'student-verify-otp' | 'student-login' | 'student-dashboard'
   const [registeredEmail, setRegisteredEmail] = useState('');
+
+  // Sync browser URL / history with current view and listen to browser popstate (back/forward)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+      if (path === '/admin/login' || path === '/admin') {
+        setCurrentView('admin-login');
+      } else {
+        setCurrentView('public');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToView = (view, updateUrl = true) => {
+    setCurrentView(view);
+    if (updateUrl) {
+      if (view === 'login' || view === 'admin-login') {
+        if (window.location.pathname !== '/admin/login') {
+          window.history.pushState({}, '', '/admin/login');
+        }
+      } else {
+        if (window.location.pathname === '/admin/login' || window.location.pathname === '/admin') {
+          window.history.pushState({}, '', '/');
+        }
+      }
+    }
+  };
 
   // Wait for both admin AND student session checks to complete
   if (isLoading || isStudentLoading) {
@@ -438,12 +476,12 @@ const AppContent = () => {
 
   // If user is authenticated as Admin, render the full Admin Dashboard
   if (isAuthenticated) {
-    return <AdminDashboard onNavigateToPublic={() => setCurrentView('public')} />;
+    return <AdminDashboard onNavigateToPublic={() => navigateToView('public')} />;
   }
 
   // If student is authenticated (from localStorage session restore OR after login), show dashboard
   if (isStudentAuthenticated || currentView === 'student-dashboard') {
-    return <StudentDashboard onNavigateToPublic={() => setCurrentView('public')} />;
+    return <StudentDashboard onNavigateToPublic={() => navigateToView('public')} />;
   }
 
   // Student Registration view
@@ -452,10 +490,10 @@ const AppContent = () => {
       <StudentRegister
         onRegistrationSuccess={(email) => {
           setRegisteredEmail(email);
-          setCurrentView('student-verify-otp');
+          navigateToView('student-verify-otp', false);
         }}
-        onNavigateToLogin={() => setCurrentView('student-login')}
-        onNavigateToPublic={() => setCurrentView('public')}
+        onNavigateToLogin={() => navigateToView('student-login', false)}
+        onNavigateToPublic={() => navigateToView('public')}
       />
     );
   }
@@ -466,10 +504,10 @@ const AppContent = () => {
       <StudentVerifyOtp
         email={registeredEmail}
         onVerificationSuccess={(_response) => {
-          setCurrentView('student-login');
+          navigateToView('student-login', false);
         }}
-        onNavigateToLogin={() => setCurrentView('student-login')}
-        onNavigateToRegister={() => setCurrentView('student-register')}
+        onNavigateToLogin={() => navigateToView('student-login', false)}
+        onNavigateToRegister={() => navigateToView('student-register', false)}
       />
     );
   }
@@ -480,29 +518,29 @@ const AppContent = () => {
       <StudentLogin
         initialEmail={registeredEmail}
         onLoginSuccess={(_response) => {
-          setCurrentView('student-dashboard');
+          navigateToView('student-dashboard', false);
         }}
-        onNavigateToRegister={() => setCurrentView('student-register')}
+        onNavigateToRegister={() => navigateToView('student-register', false)}
         onNavigateToVerify={(emailToVerify) => {
           setRegisteredEmail(emailToVerify);
-          setCurrentView('student-verify-otp');
+          navigateToView('student-verify-otp', false);
         }}
-        onNavigateToPublic={() => setCurrentView('public')}
+        onNavigateToPublic={() => navigateToView('public')}
       />
     );
   }
 
   // Admin Login view
   if (currentView === 'login' || currentView === 'admin-login') {
-    return <AdminLogin onNavigateToPublic={() => setCurrentView('public')} />;
+    return <AdminLogin onNavigateToPublic={() => navigateToView('public')} />;
   }
 
   // Default: Public landing page
   return (
     <PublicLanding
-      onGoToAdmin={() => setCurrentView('login')}
-      onGoToStudentRegister={() => setCurrentView('student-register')}
-      onGoToStudentLogin={() => setCurrentView('student-login')}
+      onGoToAdmin={() => navigateToView('admin-login')}
+      onGoToStudentRegister={() => navigateToView('student-register', false)}
+      onGoToStudentLogin={() => navigateToView('student-login', false)}
     />
   );
 };
