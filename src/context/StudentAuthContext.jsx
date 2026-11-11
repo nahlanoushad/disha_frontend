@@ -12,7 +12,7 @@ const isTokenExpired = (token) => {
   try {
     const parts = token.split('.');
     if (parts.length !== 3) return true;
-    
+
     // Decode base64 URL
     const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = decodeURIComponent(
@@ -156,4 +156,3 @@ export const useStudentAuth = () => {
 };
 
 export default StudentAuthContext;
-
