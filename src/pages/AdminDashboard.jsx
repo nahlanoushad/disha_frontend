@@ -21,12 +21,14 @@ import {
   ArrowUpRight,
   ShieldCheck,
   UserCheck,
-  Key
+  Key,
+  Bell
 } from 'lucide-react';
 import CategoriesTab from '../components/CategoriesTab.jsx';
 import CoursesTab from '../components/CoursesTab.jsx';
 import EntranceExamsTab from '../components/EntranceExamsTab.jsx';
 import StudentsTab from '../components/StudentsTab.jsx';
+import NotificationsTab from '../components/NotificationsTab.jsx';
 
 const AdminDashboard = ({ onNavigateToPublic }) => {
   const { admin, logout, refreshProfile, token } = useAuth();
@@ -307,6 +309,30 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
             >
               <Users size={19} color={activeTab === 'students' ? '#7c3aed' : '#7c6f93'} />
               Students
+            </button>
+
+            <button
+              onClick={() => setActiveTab('notifications')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'notifications' ? 600 : 500,
+                color: activeTab === 'notifications' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'notifications' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'notifications' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <Bell size={19} color={activeTab === 'notifications' ? '#7c3aed' : '#7c6f93'} />
+              Notifications
             </button>
 
             <button
@@ -776,6 +802,11 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
           {/* TAB: STUDENTS */}
           {activeTab === 'students' && (
             <StudentsTab />
+          )}
+
+          {/* TAB: NOTIFICATIONS */}
+          {activeTab === 'notifications' && (
+            <NotificationsTab />
           )}
 
           {/* TAB 4: INQUIRIES */}

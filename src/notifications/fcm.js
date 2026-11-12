@@ -1,4 +1,4 @@
-import { onRegistered, register, isSupported, onMessage } from "firebase/messaging";
+import { getToken, isSupported, onMessage } from "firebase/messaging";
 import { messaging } from "../firebase";
 import studentApi from "../services/studentApi";
 
@@ -43,24 +43,45 @@ async function initializeFCMInternal() {
 
         console.log("Service worker registered:", serviceWorkerRegistration);
 
-        onRegistered(messaging, async (installationId) => {
-            console.log("Firebase Installation ID:", installationId);
+        // Ensure service worker is fully activated and ready
+        await navigator.serviceWorker.ready;
+
+        // Obtain the real FCM delivery registration token
+        const currentToken = await getToken(messaging, {
+            vapidKey: VAPID_KEY,
+            serviceWorkerRegistration
+        });
+
+        if (currentToken) {
+            console.log("FCM registration token obtained successfully.");
+
+            // Optionally retrieve the installation identifier (FID) as a separate field
+            let installationId = null;
+            try {
+                const { getInstallations, getId } = await import("firebase/installations");
+                installationId = await getId(getInstallations());
+            } catch (fidErr) {
+                console.debug("FID retrieval skipped/unavailable:", fidErr?.message);
+            }
 
             try {
                 await studentApi.registerDevice({
-                    fid: installationId,
+                    fcmToken: currentToken,
+                    fid: installationId || undefined,
                     platform: "web"
                 });
-                console.log("Successfully linked FID to Student profile.");
+                console.log("Successfully registered device with FCM token to Student profile.");
             } catch (err) {
-                console.error("Failed to link FID to Student profile.", err);
+                console.error("Failed to link FCM token to Student profile:", err);
             }
-        });
+        } else {
+            console.warn("No registration token available. Request permission to generate one.");
+        }
 
         // Foreground Message Handler
         onMessage(messaging, (payload) => {
             console.log("Foreground message received:", payload);
-            
+
             // Fallback to basic DOM toast for safe foreground UI notification
             const toast = document.createElement("div");
             toast.style.position = "fixed";
@@ -74,32 +95,27 @@ async function initializeFCMInternal() {
             toast.style.zIndex = "9999";
             toast.style.fontFamily = "var(--font-sans)";
             toast.style.maxWidth = "300px";
-            
+
             const title = document.createElement("strong");
             title.style.display = "block";
             title.style.marginBottom = "4px";
             title.innerText = payload.notification?.title || "New Notification";
-            
+
             const body = document.createElement("span");
             body.style.fontSize = "0.9rem";
             body.innerText = payload.notification?.body || "";
-            
+
             toast.appendChild(title);
             toast.appendChild(body);
-            
+
             document.body.appendChild(toast);
-            
+
             // Auto remove after 5 seconds
             setTimeout(() => {
                 if (document.body.contains(toast)) {
                     document.body.removeChild(toast);
                 }
             }, 5000);
-        });
-
-        await register(messaging, {
-            vapidKey: VAPID_KEY,
-            serviceWorkerRegistration,
         });
 
         console.log("FCM registration completed.");
