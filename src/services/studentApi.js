@@ -125,7 +125,7 @@ export const studentApi = {
   },
 
   /**
-   * Get Colleges (Live API)
+   * Get Colleges (Live API with optional location & proximity parameters)
    */
   async getColleges(params = {}) {
     const query = new URLSearchParams();
@@ -134,11 +134,57 @@ export const studentApi = {
     if (params.district && params.district !== 'all') query.append('district', params.district);
     if (params.type && params.type !== 'all') query.append('type', params.type);
     if (params.course && params.course !== 'all') query.append('course', params.course);
+    if (params.sort) query.append('sort', params.sort);
     if (params.page) query.append('page', params.page);
     if (params.limit) query.append('limit', params.limit);
     if (params.format) query.append('format', params.format);
+    if (params.lat !== undefined && params.lat !== null) query.append('lat', params.lat);
+    if (params.lng !== undefined && params.lng !== null) query.append('lng', params.lng);
+    if (params.studentCity) query.append('studentCity', params.studentCity);
+    if (params.studentDistrict) query.append('studentDistrict', params.studentDistrict);
+    if (params.studentState) query.append('studentState', params.studentState);
+    if (params.maxDistance && params.maxDistance !== 'all') query.append('maxDistance', params.maxDistance);
     const qs = query.toString();
     return studentRequest(qs ? `/colleges?${qs}` : '/colleges');
+  },
+
+  /**
+   * Get Current Student's Saved Location
+   */
+  async getLocation() {
+    return studentRequest('/student/location');
+  },
+
+  /**
+   * Update / Confirm Student's Preferred Location
+   */
+  async updateLocation(data) {
+    return studentRequest('/student/location', {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  /**
+   * Search Indian Locations (cached backend proxy)
+   */
+  async searchLocation(q, limit = 6) {
+    const query = new URLSearchParams({
+      q: q || '',
+      limit: String(limit)
+    });
+    return studentRequest(`/student/location/search?${query.toString()}`);
+  },
+
+  /**
+   * Reverse Geocode Coordinates (cached backend proxy)
+   */
+  async reverseGeocode(lat, lng) {
+    const query = new URLSearchParams({
+      lat: String(lat),
+      lng: String(lng)
+    });
+    return studentRequest(`/student/location/reverse?${query.toString()}`);
   },
 
   /**

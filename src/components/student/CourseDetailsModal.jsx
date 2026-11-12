@@ -13,9 +13,11 @@ import {
   TrendingUp,
   AlertCircle
 } from 'lucide-react';
+import { useStudentAuth } from '../../context/StudentAuthContext.jsx';
 import studentApi from '../../services/studentApi.js';
 
 const CourseDetailsModal = ({ course, onClose, onSelectCollege }) => {
+  const { student } = useStudentAuth();
   const [colleges, setColleges] = useState([]);
   const [loadingColleges, setLoadingColleges] = useState(false);
 
@@ -23,12 +25,21 @@ const CourseDetailsModal = ({ course, onClose, onSelectCollege }) => {
     if (course?.name) {
       fetchOfferingColleges(course.name);
     }
-  }, [course]);
+  }, [course, student?.location]);
 
   const fetchOfferingColleges = async (courseName) => {
     setLoadingColleges(true);
     try {
-      const res = await studentApi.getColleges({ course: courseName });
+      const params = { course: courseName };
+      if (student?.location?.coordinates?.latitude) {
+        params.lat = student.location.coordinates.latitude;
+        params.lng = student.location.coordinates.longitude;
+      }
+      if (student?.location?.city) params.studentCity = student.location.city;
+      if (student?.location?.district) params.studentDistrict = student.location.district;
+      if (student?.location?.state) params.studentState = student.location.state;
+
+      const res = await studentApi.getColleges(params);
       if (Array.isArray(res)) {
         setColleges(res);
       } else if (res?.data?.colleges) {
@@ -266,14 +277,14 @@ const CourseDetailsModal = ({ course, onClose, onSelectCollege }) => {
             )}
           </div>
 
-          {/* Section 4: Colleges Offering this Course (Live Database Relationships) */}
+          {/* Section 4: Colleges Offering this Course (Prioritized by student location) */}
           <div style={{ paddingTop: '1.25rem', borderTop: '1.5px solid #e2e8f0' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <Building2 size={16} color="#1d4ed8" /> Colleges Offering {course.name}
               </span>
-              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>
-                {colleges.length} Institutes Found
+              <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#1d4ed8', backgroundColor: '#eff6ff', padding: '0.2rem 0.6rem', borderRadius: '6px' }}>
+                {colleges.length} Institutes Near You
               </span>
             </h3>
 
@@ -304,13 +315,31 @@ const CourseDetailsModal = ({ course, onClose, onSelectCollege }) => {
                       }}
                     >
                       <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.2rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.2rem', flexWrap: 'wrap' }}>
                           <h4 style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
                             {col.name}
                           </h4>
                           {col.naacGrade && (
                             <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
                               NAAC {col.naacGrade}
+                            </span>
+                          )}
+                          {col.distanceKm !== null && (
+                            <span
+                              style={{
+                                fontSize: '0.7rem',
+                                fontWeight: 700,
+                                padding: '0.1rem 0.45rem',
+                                borderRadius: '4px',
+                                backgroundColor: '#eff6ff',
+                                color: '#1d4ed8',
+                                border: '1px solid #bfdbfe',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.2rem'
+                              }}
+                            >
+                              <MapPin size={10} /> {col.distanceKm} km away
                             </span>
                           )}
                         </div>

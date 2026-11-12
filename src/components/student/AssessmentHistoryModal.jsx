@@ -145,19 +145,24 @@ const AssessmentHistoryModal = ({
 
                     {isCompleted && (
                       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                        {att.riasecCode && (
+                        {att.courseRecommendations?.length > 0 ? (
                           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1d4ed8' }}>
-                            Code: {att.riasecCode}
+                            Top Degree Match: {att.courseRecommendations[0].courseName} ({att.courseRecommendations[0].indicativeScore || 90}%)
                           </span>
-                        )}
-                        {att.topInterests?.length > 0 && (
+                        ) : att.riasecCode ? (
+                          <>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1d4ed8' }}>
+                              Code: {att.riasecCode}
+                            </span>
+                            {att.topInterests?.length > 0 && (
+                              <span style={{ fontSize: '0.75rem', color: '#4b5563' }}>
+                                ({att.topInterests.join(', ')})
+                              </span>
+                            )}
+                          </>
+                        ) : (
                           <span style={{ fontSize: '0.75rem', color: '#4b5563' }}>
-                            ({att.topInterests.join(', ')})
-                          </span>
-                        )}
-                        {att.abilityScores?.overallPercentage !== undefined && (
-                          <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 600 }}>
-                            • Reasoning: {att.abilityScores.overallPercentage}%
+                            Career Discovery Completed
                           </span>
                         )}
                       </div>

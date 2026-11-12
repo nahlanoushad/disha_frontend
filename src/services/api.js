@@ -245,6 +245,66 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status })
     });
+  },
+
+  /**
+   * Admin Career Assessment Management
+   */
+  async getCareerQuestions(params = {}) {
+    const query = new URLSearchParams();
+    if (params.status && params.status !== 'all') query.append('status', params.status);
+    if (params.section && params.section !== 'all') query.append('section', params.section);
+    if (params.search) query.append('search', params.search);
+
+    const queryString = query.toString();
+    const endpoint = queryString ? `/admin/career-assessment/questions?${queryString}` : '/admin/career-assessment/questions';
+    return request(endpoint);
+  },
+
+  async createCareerQuestion(data) {
+    return request('/admin/career-assessment/questions', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async getCareerQuestionById(id) {
+    return request(`/admin/career-assessment/questions/${id}`);
+  },
+
+  async updateCareerQuestion(id, data) {
+    return request(`/admin/career-assessment/questions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async deleteCareerQuestion(id) {
+    return request(`/admin/career-assessment/questions/${id}`, {
+      method: 'DELETE'
+    });
+  },
+
+  async updateCareerQuestionStatus(id, status) {
+    return request(`/admin/career-assessment/questions/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status })
+    });
+  },
+
+  async publishCareerQuestions(data = {}) {
+    return request('/admin/career-assessment/publish', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  async previewCareerQuestions(params = {}) {
+    const query = new URLSearchParams();
+    if (params.includeDrafts) query.append('includeDrafts', 'true');
+    const queryString = query.toString();
+    const endpoint = queryString ? `/admin/career-assessment/preview?${queryString}` : '/admin/career-assessment/preview';
+    return request(endpoint);
   }
 };
 

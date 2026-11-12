@@ -255,56 +255,6 @@ const PublicHomePage = ({
               Get Started
               <ArrowRight size={15} />
             </button>
-
-            {/* Clearly Visible Admin Portal Navigation Link */}
-            <button
-              onClick={onGoToAdmin}
-              title="Access DISHA Admin Suite"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                backgroundColor: '#f5f3ff',
-                color: '#6d28d9',
-                border: '1.5px solid #ddd6fe',
-                padding: '0.5rem 0.85rem',
-                borderRadius: '8px',
-                fontSize: '0.86rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.18s ease',
-                boxShadow: '0 1px 3px rgba(124, 58, 237, 0.08)',
-                whiteSpace: 'nowrap'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = '#ede9fe';
-                e.currentTarget.style.borderColor = '#c4b5fd';
-                e.currentTarget.style.color = '#5b21b6';
-                e.currentTarget.style.boxShadow = '0 2px 6px rgba(124, 58, 237, 0.16)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = '#f5f3ff';
-                e.currentTarget.style.borderColor = '#ddd6fe';
-                e.currentTarget.style.color = '#6d28d9';
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(124, 58, 237, 0.08)';
-              }}
-            >
-              <ShieldCheck size={15} color="#7c3aed" />
-              <span>Admin Portal</span>
-              {isAdminAuthenticated && (
-                <span
-                  style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    backgroundColor: '#059669',
-                    display: 'inline-block',
-                    marginLeft: '2px'
-                  }}
-                  title="Admin Session Active"
-                />
-              )}
-            </button>
           </div>
 
           {/* Mobile Menu Hamburger */}
@@ -390,39 +340,6 @@ const PublicHomePage = ({
               >
                 Get Started Free
                 <ArrowRight size={16} />
-              </button>
-              <button
-                onClick={onGoToAdmin}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  backgroundColor: '#f5f3ff',
-                  border: '1.5px solid #ddd6fe',
-                  color: '#6d28d9',
-                  borderRadius: '8px',
-                  padding: '0.65rem 1rem',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  marginTop: '0.35rem'
-                }}
-              >
-                <ShieldCheck size={16} color="#7c3aed" />
-                <span>Admin Portal</span>
-                {isAdminAuthenticated && (
-                  <span
-                    style={{
-                      width: '7px',
-                      height: '7px',
-                      borderRadius: '50%',
-                      backgroundColor: '#059669',
-                      display: 'inline-block',
-                      marginLeft: '2px'
-                    }}
-                  />
-                )}
               </button>
             </div>
           </div>
@@ -1344,41 +1261,6 @@ const PublicHomePage = ({
                 <li>
                   <button onClick={onGoToStudentRegister} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
                     New Student Registration
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={onGoToAdmin}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#cbd5e1',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      padding: '0.2rem 0',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.45rem',
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      transition: 'color 0.15s ease'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.color = '#c4b5fd')}
-                    onMouseOut={(e) => (e.currentTarget.style.color = '#cbd5e1')}
-                  >
-                    <ShieldCheck size={15} color="#a78bfa" />
-                    <span>Admin Portal</span>
-                    {isAdminAuthenticated && (
-                      <span
-                        style={{
-                          width: '6px',
-                          height: '6px',
-                          borderRadius: '50%',
-                          backgroundColor: '#10b981',
-                          display: 'inline-block'
-                        }}
-                      />
-                    )}
                   </button>
                 </li>
               </ul>

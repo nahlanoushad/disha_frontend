@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard.jsx';
 import StudentLogin from './pages/student/StudentLogin.jsx';
 import StudentRegister from './pages/student/StudentRegister.jsx';
 import StudentDashboard from './pages/student/StudentDashboard.jsx';
+import LocationOnboarding from './pages/student/LocationOnboarding.jsx';
 import PublicHomePage from './pages/PublicHomePage.jsx';
 import {
   GraduationCap,
@@ -397,21 +398,61 @@ const FCMInitializer = () => {
 
 const AppContent = () => {
   const { isAuthenticated: isAdminAuthenticated, isLoading: isAdminLoading } = useAuth();
-  const { isAuthenticated: isStudentAuthenticated, isLoading: isStudentLoading } = useStudentAuth();
+  const {
+    isAuthenticated: isStudentAuthenticated,
+    isLoading: isStudentLoading,
+    student,
+    refreshProfile
+  } = useStudentAuth();
 
-  const [currentView, setCurrentView] = useState(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('test_admin_token') || urlParams.get('view') === 'admin') {
-      return 'adminDashboard';
+  const getNormalizedPath = () => {
+    try {
+      const rawPath = window.location.pathname.toLowerCase().replace(/\/$/, '') || '/';
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Explicit pathname takes first precedence:
+      if (rawPath === '/admin' || rawPath.startsWith('/admin/')) {
+        return '/admin';
+      }
+      if (rawPath === '/student' || rawPath.startsWith('/student/')) {
+        return rawPath;
+      }
+      if (rawPath === '/home') {
+        return '/';
+      }
+
+      // Query param fallback when on root path '/':
+      if (urlParams.get('test_admin_token') || urlParams.get('view') === 'admin' || urlParams.get('view') === 'adminLogin') {
+        return '/admin';
+      }
+      if (urlParams.get('test_student_token') || urlParams.get('view') === 'student') {
+        return '/student';
+      }
+
+      return rawPath;
+    } catch {
+      return '/';
     }
-    if (urlParams.get('test_student_token') || urlParams.get('view') === 'student') {
-      return 'studentDashboard';
+  };
+
+  const [currentPath, setCurrentPath] = useState(getNormalizedPath);
+
+  // Sync state on browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentPath(getNormalizedPath());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigate = (toPath) => {
+    if (window.location.pathname !== toPath) {
+      window.history.pushState({}, '', toPath);
     }
-    if (urlParams.get('view') === 'adminLogin') {
-      return 'adminLogin';
-    }
-    return 'public';
-  });
+    setCurrentPath(toPath.toLowerCase().replace(/\/$/, '') || '/');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (isAdminLoading || isStudentLoading) {
     return (
@@ -468,88 +509,105 @@ const AppContent = () => {
   }
 
   /* =======================================================
-     1. EXPLICIT PUBLIC HOMEPAGE VIEW
+     1. ADMIN ROUTE: /admin (AND /admin/*)
      ======================================================= */
-
-  if (currentView === 'public') {
+  if (currentPath === '/admin' || currentPath.startsWith('/admin/')) {
+    if (isAdminAuthenticated) {
+      return (
+        <AdminDashboard
+          onNavigateToPublic={() => navigate('/')}
+        />
+      );
+    }
     return (
-      <PublicHomePage
-        onGoToAdmin={() => {
-          if (isAdminAuthenticated) {
-            setCurrentView('adminDashboard');
-          } else {
-            setCurrentView('adminLogin');
-          }
-        }}
-        onGoToStudentLogin={() => {
-          if (isStudentAuthenticated) {
-            setCurrentView('studentDashboard');
-          } else {
-            setCurrentView('studentLogin');
-          }
-        }}
-        onGoToStudentRegister={() => setCurrentView('studentRegister')}
-        isAdminAuthenticated={isAdminAuthenticated}
-        isStudentAuthenticated={isStudentAuthenticated}
+      <AdminLogin
+        onNavigateToPublic={() => navigate('/')}
       />
     );
   }
 
   /* =======================================================
-     2. ADMIN VIEWS
+     2. STUDENT ROUTES: /student, /student/login, /student/register
      ======================================================= */
-
-  // If already authenticated and visiting admin paths, render AdminDashboard
-  if (isAdminAuthenticated && (currentView === 'adminDashboard' || currentView === 'adminLogin' || currentView === 'admin')) {
-    return (
-      <AdminDashboard
-        onNavigateToPublic={() => setCurrentView('public')}
-      />
-    );
-  }
-
-  /* =======================================================
-     3. STUDENT VIEWS
-     ======================================================= */
-
-  // If already authenticated and visiting student paths, render StudentDashboard
-  if (isStudentAuthenticated && (currentView === 'studentDashboard' || currentView === 'studentLogin' || currentView === 'studentRegister' || currentView === 'student')) {
-    return (
-      <StudentDashboard
-        onNavigateToPublic={() => setCurrentView('public')}
-      />
-    );
-  }
-
-  /* =======================================================
-     4. STUDENT AUTHENTICATION VIEWS
-     ======================================================= */
-
-  if (currentView === 'studentLogin') {
+  if (currentPath === '/student/login') {
+    if (isStudentAuthenticated) {
+      if (!student?.locationSetupCompleted) {
+        return <LocationOnboarding onComplete={() => refreshProfile()} />;
+      }
+      return (
+        <StudentDashboard
+          onNavigateToPublic={() => navigate('/')}
+        />
+      );
+    }
     return (
       <StudentLogin
-        onNavigateToRegister={() => setCurrentView('studentRegister')}
-        onNavigateToPublic={() => setCurrentView('public')}
+        onNavigateToRegister={() => navigate('/student/register')}
+        onNavigateToPublic={() => navigate('/')}
       />
     );
   }
 
-  if (currentView === 'studentRegister') {
+  if (currentPath === '/student/register') {
+    if (isStudentAuthenticated) {
+      if (!student?.locationSetupCompleted) {
+        return <LocationOnboarding onComplete={() => refreshProfile()} />;
+      }
+      return (
+        <StudentDashboard
+          onNavigateToPublic={() => navigate('/')}
+        />
+      );
+    }
     return (
       <StudentRegister
-        onNavigateToLogin={() => setCurrentView('studentLogin')}
-        onNavigateToPublic={() => setCurrentView('public')}
+        onNavigateToLogin={() => navigate('/student/login')}
+        onNavigateToPublic={() => navigate('/')}
+      />
+    );
+  }
+
+  if (currentPath === '/student' || currentPath.startsWith('/student/')) {
+    if (isStudentAuthenticated) {
+      if (!student?.locationSetupCompleted) {
+        return <LocationOnboarding onComplete={() => refreshProfile()} />;
+      }
+      return (
+        <StudentDashboard
+          onNavigateToPublic={() => navigate('/')}
+        />
+      );
+    }
+    return (
+      <StudentLogin
+        onNavigateToRegister={() => navigate('/student/register')}
+        onNavigateToPublic={() => navigate('/')}
       />
     );
   }
 
   /* =======================================================
-     5. ADMIN LOGIN VIEW
+     3. PUBLIC HOMEPAGE: / and /home (DEFAULT)
      ======================================================= */
-
   return (
-    <AdminLogin
-      onNavigateToPublic={() => setCurrentView('public')}
+    <PublicHomePage
+      onGoToAdmin={() => navigate('/admin')}
+      onGoToStudentLogin={() => {
+        if (isStudentAuthenticated) {
+          navigate('/student');
+        } else {
+          navigate('/student/login');
+        }
+      }}
+      onGoToStudentRegister={() => {
+        if (isStudentAuthenticated) {
+          navigate('/student');
+        } else {
+          navigate('/student/register');
+        }
+      }}
+      isAdminAuthenticated={isAdminAuthenticated}
+      isStudentAuthenticated={isStudentAuthenticated}
     />
   );
 };

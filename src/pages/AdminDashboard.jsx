@@ -29,10 +29,17 @@ import CoursesTab from '../components/CoursesTab.jsx';
 import EntranceExamsTab from '../components/EntranceExamsTab.jsx';
 import StudentsTab from '../components/StudentsTab.jsx';
 import NotificationsTab from '../components/NotificationsTab.jsx';
+import CareerAssessmentQuestionsTab from '../components/CareerAssessmentQuestionsTab.jsx';
 
 const AdminDashboard = ({ onNavigateToPublic }) => {
   const { admin, logout, refreshProfile, token } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get('tab') || 'overview';
+    } catch {
+      return 'overview';
+    }
+  });
   const [serverHealth, setServerHealth] = useState({ status: 'checking', message: 'Connecting...' });
   const [isRefreshingHealth, setIsRefreshingHealth] = useState(false);
   const [isRefreshingProfile, setIsRefreshingProfile] = useState(false);
@@ -336,6 +343,30 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
             </button>
 
             <button
+              onClick={() => setActiveTab('careerAssessment')}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.7rem 0.85rem',
+                borderRadius: 'var(--radius-md)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.88rem',
+                fontWeight: activeTab === 'careerAssessment' ? 600 : 500,
+                color: activeTab === 'careerAssessment' ? '#7c3aed' : '#5b5273',
+                backgroundColor: activeTab === 'careerAssessment' ? '#f5f3ff' : 'transparent',
+                borderLeft: activeTab === 'careerAssessment' ? '3px solid #7c3aed' : '3px solid transparent',
+                marginBottom: '0.25rem',
+                transition: 'var(--transition-smooth)'
+              }}
+            >
+              <Sparkles size={19} color={activeTab === 'careerAssessment' ? '#7c3aed' : '#7c6f93'} />
+              Career Assessment
+            </button>
+
+            <button
               onClick={() => setActiveTab('inquiries')}
               style={{
                 width: '100%',
@@ -426,7 +457,7 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
           borderTop: '1.5px solid #ede9fe',
           backgroundColor: '#faf5ff'
         }}>
-          <div 
+          <div
             onClick={() => setActiveTab('profile')}
             title="Click to view full admin profile from /me"
             style={{
@@ -526,7 +557,7 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
           {/* Right Header Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {/* Live Backend Status Indicator */}
-            <div 
+            <div
               onClick={checkBackendHealth}
               title="Click to refresh connection status"
               style={{
@@ -808,6 +839,14 @@ const AdminDashboard = ({ onNavigateToPublic }) => {
           {activeTab === 'notifications' && (
             <NotificationsTab />
           )}
+
+          {/* TAB: CAREER ASSESSMENT QUESTIONS */}
+          {activeTab === 'careerAssessment' && (
+            <CareerAssessmentQuestionsTab />
+          )}
+
+
+
 
           {/* TAB 4: INQUIRIES */}
           {activeTab === 'inquiries' && (

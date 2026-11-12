@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useStudentAuth } from '../../context/StudentAuthContext.jsx';
 import { studentApi } from '../../services/studentApi.js';
+import LocationChangeModal from '../../components/student/LocationChangeModal.jsx';
 
 const AVAILABLE_STREAMS = [
   'Science (Bio-Maths)',
@@ -61,6 +62,7 @@ const StudentProfile = () => {
   const [activeSection, setActiveSection] = useState('academic'); // 'academic' | 'preferences' | 'personal'
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   // Initialize form state from student data
   const [formData, setFormData] = useState({
@@ -77,9 +79,18 @@ const StudentProfile = () => {
       schoolName: student?.academicProfile?.schoolName || ''
     },
     location: {
-      state: student?.location?.state || 'Kerala',
+      displayName: student?.location?.displayName || '',
+      locality: student?.location?.locality || '',
+      city: student?.location?.city || '',
       district: student?.location?.district || '',
-      city: student?.location?.city || ''
+      state: student?.location?.state || 'Kerala',
+      country: student?.location?.country || 'India',
+      pincode: student?.location?.pincode || '',
+      coordinates: {
+        latitude: student?.location?.coordinates?.latitude ?? null,
+        longitude: student?.location?.coordinates?.longitude ?? null
+      },
+      source: student?.location?.source || ''
     },
     preferences: {
       interestedStreams: student?.preferences?.interestedStreams || [],
@@ -107,9 +118,18 @@ const StudentProfile = () => {
           schoolName: student.academicProfile?.schoolName || ''
         },
         location: {
-          state: student.location?.state || 'Kerala',
+          displayName: student.location?.displayName || '',
+          locality: student.location?.locality || '',
+          city: student.location?.city || '',
           district: student.location?.district || '',
-          city: student.location?.city || ''
+          state: student.location?.state || 'Kerala',
+          country: student.location?.country || 'India',
+          pincode: student.location?.pincode || '',
+          coordinates: {
+            latitude: student.location?.coordinates?.latitude ?? null,
+            longitude: student.location?.coordinates?.longitude ?? null
+          },
+          source: student.location?.source || ''
         },
         preferences: {
           interestedStreams: student.preferences?.interestedStreams || [],
@@ -699,6 +719,54 @@ const StudentProfile = () => {
 
             </div>
 
+            {/* Preferred Geographical Education Hub Banner */}
+            <div
+              style={{
+                marginTop: '1.5rem',
+                padding: '1.25rem',
+                borderRadius: '12px',
+                backgroundColor: '#eff6ff',
+                border: '1.5px solid #bfdbfe',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem'
+              }}
+            >
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', marginBottom: '0.25rem' }}>
+                  <MapPin size={18} color="#1d4ed8" />
+                  <span style={{ fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>
+                    Saved Location: {student?.location?.displayName || `${formData.location.city || 'Kozhikode'}, ${formData.location.state || 'Kerala'}`}
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.8rem', color: '#475569', margin: 0 }}>
+                  Coordinates: {student?.location?.coordinates?.latitude ? `${student.location.coordinates.latitude.toFixed(4)}, ${student.location.coordinates.longitude.toFixed(4)}` : 'Not geocoded yet'}. Used as your default geographical reference for nearby colleges and educational discovery.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsLocationModalOpen(true)}
+                className="btn-secondary"
+                style={{
+                  padding: '0.55rem 1rem',
+                  fontSize: '0.82rem',
+                  backgroundColor: '#ffffff',
+                  color: '#1d4ed8',
+                  border: '1.5px solid #2563eb',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <MapPin size={14} /> Update Location on Interactive Map
+              </button>
+            </div>
+
             <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'space-between' }}>
               <button
                 type="button"
@@ -719,6 +787,31 @@ const StudentProfile = () => {
           </div>
         )}
       </form>
+      {/* Location Change Modal */}
+      <LocationChangeModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        currentLocation={student?.location}
+        onSavePermanent={async (newLoc) => {
+          setFormData((prev) => ({
+            ...prev,
+            location: {
+              ...prev.location,
+              displayName: newLoc.displayName,
+              locality: newLoc.locality,
+              city: newLoc.city,
+              district: newLoc.district,
+              state: newLoc.state,
+              country: newLoc.country || 'India',
+              pincode: newLoc.pincode,
+              coordinates: newLoc.coordinates,
+              source: newLoc.source
+            }
+          }));
+          await refreshProfile();
+        }}
+        title="Update Preferred Location"
+      />
     </div>
   );
 };

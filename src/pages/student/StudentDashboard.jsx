@@ -33,10 +33,12 @@ import ExamCalendar from '../../components/student/ExamCalendar.jsx';
 import AptitudeAssessment from '../../components/student/AptitudeAssessment.jsx';
 import CourseDetailsModal from '../../components/student/CourseDetailsModal.jsx';
 import CollegeDetailsModal from '../../components/student/CollegeDetailsModal.jsx';
+import LocationChangeModal from '../../components/student/LocationChangeModal.jsx';
 import studentApi from '../../services/studentApi.js';
 
 const StudentDashboard = ({ onNavigateToPublic }) => {
-  const { student, logout } = useStudentAuth();
+  const { student, logout, refreshProfile } = useStudentAuth();
+  const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
 
   // Navigation tab state
   const [activeTab, setActiveTab] = useState(() => {
@@ -68,6 +70,39 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
   const [selectedCourseForModal, setSelectedCourseForModal] = useState(null);
   const [selectedCollegeForModal, setSelectedCollegeForModal] = useState(null);
   const [selectedExamForHub, setSelectedExamForHub] = useState(null);
+
+  const handleOpenCourseDetails = async (courseOrId) => {
+    if (!courseOrId) return;
+    if (typeof courseOrId === 'object' && courseOrId.name && courseOrId.description) {
+      setSelectedCourseForModal(courseOrId);
+      return;
+    }
+    const id = typeof courseOrId === 'string' ? courseOrId : (courseOrId.courseId || courseOrId._id);
+    if (id) {
+      try {
+        const res = await studentApi.getCourseById(id);
+        if (res?.data?.course) {
+          setSelectedCourseForModal(res.data.course);
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not fetch full course by ID:', err);
+      }
+    }
+    if (typeof courseOrId === 'object') {
+      setSelectedCourseForModal({
+        _id: id || 'temp-id',
+        name: courseOrId.courseName || courseOrId.name,
+        category: { name: courseOrId.category || 'Undergraduate' },
+        duration: courseOrId.duration || '3-4 Years',
+        eligibility: courseOrId.eligibility || '10+2 Higher Secondary',
+        feeStructure: courseOrId.feeStructure || 'Contact University',
+        careerOpportunities: courseOrId.careerOpportunities || [],
+        entranceExams: courseOrId.entranceExams || [],
+        status: 'active'
+      });
+    }
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -131,9 +166,18 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
   const fetchDashboardData = async () => {
     setDashboardData((prev) => ({ ...prev, loading: true, error: null }));
     try {
+      const collegeParams = { limit: 4, format: 'envelope', sort: 'distance' };
+      if (student?.location?.coordinates?.latitude) {
+        collegeParams.lat = student.location.coordinates.latitude;
+        collegeParams.lng = student.location.coordinates.longitude;
+      }
+      if (student?.location?.city) collegeParams.studentCity = student.location.city;
+      if (student?.location?.district) collegeParams.studentDistrict = student.location.district;
+      if (student?.location?.state) collegeParams.studentState = student.location.state;
+
       const [coursesRes, collegesRes, examsRes, trackedRes, latestAttemptRes] = await Promise.allSettled([
         studentApi.getCourses({ limit: 4 }),
-        studentApi.getColleges({ limit: 3, format: 'envelope' }),
+        studentApi.getColleges(collegeParams),
         studentApi.getEntranceExams({ limit: 4 }),
         studentApi.getTrackedExams(),
         studentApi.getLatestAptitudeAttempt()
@@ -148,8 +192,8 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
       if (collegesRes.status === 'fulfilled') {
         const val = collegesRes.value;
         if (val?.data?.colleges) colleges = val.data.colleges;
-        else if (Array.isArray(val?.data)) colleges = val.data.slice(0, 3);
-        else if (Array.isArray(val)) colleges = val.slice(0, 3);
+        else if (Array.isArray(val?.data)) colleges = val.data.slice(0, 4);
+        else if (Array.isArray(val)) colleges = val.slice(0, 4);
       }
 
       const exams =
@@ -188,7 +232,7 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+  }, [student?.location]);
 
   const handleLogout = () => {
     logout();
@@ -436,8 +480,38 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
             </div>
           </nav>
 
-          {/* Right Controls: Refresh, Reminders Bell & User Profile Dropdown */}
+          {/* Right Controls: Location Indicator, Refresh, Reminders Bell & User Profile Dropdown */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            {/* Header Location Pill */}
+            <button
+              onClick={() => setIsLocationModalOpen(true)}
+              title="Change your preferred location"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                padding: '0.4rem 0.75rem',
+                borderRadius: '8px',
+                backgroundColor: '#eff6ff',
+                border: '1px solid #bfdbfe',
+                color: '#1e293b',
+                fontSize: '0.82rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#dbeafe')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#eff6ff')}
+            >
+              <MapPin size={14} color="#1d4ed8" style={{ flexShrink: 0 }} />
+              <span className="hide-on-compact-mobile" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {student?.location?.displayName || `${student?.location?.city || 'Kozhikode'}, ${student?.location?.state || 'Kerala'}`}
+              </span>
+              <span style={{ fontSize: '0.72rem', color: '#1d4ed8', fontWeight: 700, paddingLeft: '2px' }}>
+                Change
+              </span>
+            </button>
+
             <button
               onClick={fetchDashboardData}
               title="Refresh Data"
@@ -778,23 +852,59 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
               >
                 {/* Left Column: Personalized Greeting, Heading, Buttons & Integrated Profile Strip */}
                 <div>
-                  <div
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.45rem',
-                      backgroundColor: '#eff6ff',
-                      border: '1px solid #bfdbfe',
-                      padding: '0.3rem 0.85rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      color: '#1d4ed8',
-                      marginBottom: '1rem'
-                    }}
-                  >
-                    <Sparkles size={14} />
-                    Welcome back, {student?.name || 'Student'}
+                  {/* Greeting & Location Pills */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                        backgroundColor: '#eff6ff',
+                        border: '1px solid #bfdbfe',
+                        padding: '0.3rem 0.85rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        color: '#1d4ed8'
+                      }}
+                    >
+                      <Sparkles size={14} />
+                      Welcome back, {student?.name || 'Student'}
+                    </div>
+
+                    <div
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.45rem',
+                        backgroundColor: '#f0fdf4',
+                        border: '1px solid #bbf7d0',
+                        padding: '0.3rem 0.85rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        color: '#166534'
+                      }}
+                    >
+                      <MapPin size={13} color="#16a34a" />
+                      Your Location: {student?.location?.displayName || `${student?.location?.city || 'Kozhikode'}, ${student?.location?.state || 'Kerala'}`}
+                      <button
+                        type="button"
+                        onClick={() => setIsLocationModalOpen(true)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#15803d',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                          padding: 0,
+                          textDecoration: 'underline',
+                          fontSize: '0.78rem'
+                        }}
+                      >
+                        Change
+                      </button>
+                    </div>
                   </div>
 
                   <h1
@@ -1194,85 +1304,201 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
 
               {/* D. Discover Colleges & Important Examination Dates (Two Columns) */}
               <div className="disha-grid-2col">
-                {/* Discover Colleges */}
+                {/* Educational Opportunities Near You */}
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <Building2 size={18} color="#059669" />
-                      <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
-                        Discover Colleges
-                      </h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Building2 size={18} color="#1d4ed8" />
+                        <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0f172a' }}>
+                          Educational Opportunities Near You
+                        </h2>
+                      </div>
+                      <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '2px' }}>
+                        Accredited institutions prioritized near <strong style={{ color: '#1e293b' }}>{student?.location?.displayName || `${student?.location?.city || 'Kozhikode'}, ${student?.location?.state || 'Kerala'}`}</strong>
+                      </p>
                     </div>
-                    <button
-                      onClick={() => setActiveTab('colleges')}
-                      style={{ background: 'none', border: 'none', color: '#059669', fontSize: '0.85rem', fontWeight: 700, cursor: 'pointer' }}
-                    >
-                      College Finder &rarr;
-                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => setIsLocationModalOpen(true)}
+                        style={{
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          color: '#1d4ed8',
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          padding: '0.35rem 0.75rem',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}
+                      >
+                        <MapPin size={12} /> Change
+                      </button>
+
+                      <button
+                        onClick={() => setActiveTab('colleges')}
+                        style={{ background: 'none', border: 'none', color: '#1d4ed8', fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        College Finder &rarr;
+                      </button>
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {dashboardData.colleges.map((col) => (
-                      <div
-                        key={col._id}
-                        className="disha-card disha-card-hover"
-                        style={{ padding: '1.25rem' }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem' }}>
-                          <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
-                            {col.name}
-                          </h3>
-                          {col.naacGrade && (
-                            <span className="disha-badge disha-badge-emerald" style={{ fontSize: '0.72rem' }}>
-                              NAAC {col.naacGrade}
-                            </span>
+                    {dashboardData.colleges.length > 0 ? (
+                      dashboardData.colleges.map((col) => (
+                        <div
+                          key={col._id}
+                          className="disha-card disha-card-hover"
+                          style={{ padding: '1.25rem' }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 700, color: '#0f172a' }}>
+                              {col.name}
+                            </h3>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              {col.distanceKm !== null && (
+                                <span
+                                  style={{
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700,
+                                    padding: '0.15rem 0.5rem',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#eff6ff',
+                                    color: '#1d4ed8',
+                                    border: '1px solid #bfdbfe',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.2rem'
+                                  }}
+                                >
+                                  <MapPin size={11} /> {col.distanceKm} km away
+                                </span>
+                              )}
+                              {col.naacGrade && (
+                                <span className="disha-badge disha-badge-emerald" style={{ fontSize: '0.72rem' }}>
+                                  NAAC {col.naacGrade}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.82rem', marginBottom: '0.85rem', flexWrap: 'wrap' }}>
+                            <MapPin size={13} color="#0d9488" />
+                            <span>{col.district ? `${col.district}, ` : ''}{col.state}</span>
+                            <span style={{ margin: '0 0.25rem' }}>&bull;</span>
+                            <span>{col.type || 'College'}</span>
+                            {col.proximityTier === 'nearby' && (
+                              <span className="badge badge-emerald" style={{ fontSize: '0.65rem', marginLeft: '0.25rem' }}>
+                                Local Hub
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Courses Offered Preview */}
+                          {col.coursesOffered && col.coursesOffered.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginBottom: '0.75rem' }}>
+                              {col.coursesOffered.slice(0, 3).map((crs, i) => (
+                                <span
+                                  key={i}
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    backgroundColor: '#f8fafc',
+                                    color: '#334155',
+                                    border: '1px solid #e2e8f0',
+                                    padding: '0.15rem 0.45rem',
+                                    borderRadius: '4px'
+                                  }}
+                                >
+                                  {crs}
+                                </span>
+                              ))}
+                              {col.coursesOffered.length > 3 && (
+                                <span style={{ fontSize: '0.68rem', color: '#94a3b8', alignSelf: 'center' }}>
+                                  +{col.coursesOffered.length - 3} more
+                                </span>
+                              )}
+                            </div>
                           )}
-                        </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.82rem', marginBottom: '0.85rem' }}>
-                          <MapPin size={13} color="#0d9488" />
-                          <span>{col.district ? `${col.district}, ` : ''}{col.state}</span>
-                          <span style={{ margin: '0 0.25rem' }}>&bull;</span>
-                          <span>{col.type || 'College'}</span>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
-                          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                            {Array.isArray(col.coursesOffered) ? `${col.coursesOffered.length} Programs` : 'UG Courses'}
-                          </span>
-                          <div style={{ display: 'flex', gap: '0.65rem' }}>
-                            <button
-                              onClick={() => handleToggleCompare(col)}
-                              style={{
-                                background: comparisonList.some((c) => c._id === col._id) ? '#eff6ff' : '#f8fafc',
-                                border: '1px solid #cbd5e1',
-                                borderRadius: '6px',
-                                padding: '0.35rem 0.65rem',
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                color: comparisonList.some((c) => c._id === col._id) ? '#1d4ed8' : '#334155',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              {comparisonList.some((c) => c._id === col._id) ? '✓ Compared' : '+ Compare'}
-                            </button>
-                            <button
-                              onClick={() => setSelectedCollegeForModal(col)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                color: '#059669',
-                                fontSize: '0.82rem',
-                                fontWeight: 700,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              View &rarr;
-                            </button>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                              {Array.isArray(col.coursesOffered) ? `${col.coursesOffered.length} Programs` : 'UG Courses'}
+                            </span>
+                            <div style={{ display: 'flex', gap: '0.65rem' }}>
+                              <button
+                                onClick={() => handleToggleCompare(col)}
+                                style={{
+                                  background: comparisonList.some((c) => c._id === col._id) ? '#eff6ff' : '#f8fafc',
+                                  border: '1px solid #cbd5e1',
+                                  borderRadius: '6px',
+                                  padding: '0.35rem 0.65rem',
+                                  fontSize: '0.8rem',
+                                  fontWeight: 600,
+                                  color: comparisonList.some((c) => c._id === col._id) ? '#1d4ed8' : '#334155',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {comparisonList.some((c) => c._id === col._id) ? '✓ Compared' : '+ Compare'}
+                              </button>
+                              <button
+                                onClick={() => setSelectedCollegeForModal(col)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#1d4ed8',
+                                  fontSize: '0.82rem',
+                                  fontWeight: 700,
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                View College &rarr;
+                              </button>
+                            </div>
                           </div>
                         </div>
+                      ))
+                    ) : (
+                      /* Honest Empty State */
+                      <div
+                        style={{
+                          padding: '2.5rem 1.5rem',
+                          borderRadius: '12px',
+                          border: '1px dashed #cbd5e1',
+                          backgroundColor: '#ffffff',
+                          textAlign: 'center'
+                        }}
+                      >
+                        <Building2 size={36} color="#94a3b8" style={{ margin: '0 auto 0.75rem' }} />
+                        <h4 style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0f172a', marginBottom: '0.35rem' }}>
+                          No colleges found in your immediate locality
+                        </h4>
+                        <p style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1.25rem', lineHeight: 1.45 }}>
+                          No verified colleges are currently indexed within your immediate radius. You can expand your search distance or explore institutions across India.
+                        </p>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <button
+                            onClick={() => setIsLocationModalOpen(true)}
+                            className="disha-btn-secondary"
+                            style={{ fontSize: '0.8rem', padding: '0.45rem 0.95rem' }}
+                          >
+                            <MapPin size={13} /> Change Location
+                          </button>
+                          <button
+                            onClick={() => setActiveTab('colleges')}
+                            className="disha-btn-primary"
+                            style={{ fontSize: '0.8rem', padding: '0.45rem 0.95rem' }}
+                          >
+                            Explore All Colleges
+                          </button>
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
 
@@ -1399,6 +1625,8 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
             <AptitudeAssessment
               onComplete={fetchDashboardData}
               initialView="assessment"
+              onNavigateToCourse={handleOpenCourseDetails}
+              onNavigateToCollege={(col) => setSelectedCollegeForModal(col)}
             />
           )}
 
@@ -1407,6 +1635,8 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
             <AptitudeAssessment
               onComplete={fetchDashboardData}
               initialView="results"
+              onNavigateToCourse={handleOpenCourseDetails}
+              onNavigateToCollege={(col) => setSelectedCollegeForModal(col)}
             />
           )}
 
@@ -1441,6 +1671,18 @@ const StudentDashboard = ({ onNavigateToPublic }) => {
           isComparing={comparisonList.some((c) => c._id === selectedCollegeForModal._id)}
         />
       )}
+
+      {/* Location Change Modal */}
+      <LocationChangeModal
+        isOpen={isLocationModalOpen}
+        onClose={() => setIsLocationModalOpen(false)}
+        currentLocation={student?.location}
+        onSavePermanent={async () => {
+          await refreshProfile();
+          fetchDashboardData();
+        }}
+        title="Manage Your Preferred Location"
+      />
 
     </div>
   );
